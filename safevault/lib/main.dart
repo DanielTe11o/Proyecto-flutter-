@@ -120,3 +120,48 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+// ── Página principal ──
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
+  // Este widget es la página principal de tu aplicación. Es con estado,
+  // lo que significa que tiene un objeto State (definido abajo) que contiene
+  // campos que afectan cómo se ve.
+
+  // Esta clase es la configuración para el estado. Contiene los valores
+  // (en este caso el título) proporcionados por el padre (en este caso el
+  // widget App) y usados por el método build del State. Los campos en una
+  // subclase de Widget siempre están marcados como "final".
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final List<Note> _notes = [];
+  int _nextId = 1;
+
+  void _addNote() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const NoteEditorPage(),
+      ),
+    );
+
+    if (result is Note && result.content.trim().isNotEmpty) {
+      setState(() {
+        _notes.add(
+          Note(
+            id: _nextId++,
+            title: result.title,
+            content: result.content,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+        );
+      });
+    }
+  }
+
