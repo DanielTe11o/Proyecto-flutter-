@@ -120,5 +120,73 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+ // ── Editor de nota (crear / editar) ──
+class NoteEditorPage extends StatefulWidget {
+  final Note? note;
 
+  const NoteEditorPage({super.key, this.note});
+
+  @override
+  State<NoteEditorPage> createState() => _NoteEditorPageState();
+}
+
+class _NoteEditorPageState extends State<NoteEditorPage> {
+  late TextEditingController _titleController;
+  late TextEditingController _contentController;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.note?.title ?? '');
+    _contentController = TextEditingController(text: widget.note?.content ?? '');
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final now = DateTime.now();
+    final newNote = Note(
+      id: widget.note?.id ?? 0, // 0 = nuevo
+      title: _titleController.text.trim(),
+      content: _contentController.text,
+      createdAt: widget.note?.createdAt ?? now,
+      updatedAt: now,
+    );
+
+    Navigator.pop(context, newNote);
+  }
+
+  void _delete() {
+    if (widget.note != null) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Eliminar nota'),
+          content: const Text('¿Seguro que quieres eliminar esta entrada?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              onPressed: () => Navigator.pop(context, 'delete'),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        ),
+      ).then((value) {
+        if (value == 'delete') {
+          Navigator.pop(context, 'delete');
+        }
+      });
+    } else {
+      Navigator.pop(context);
+    }
+  }
 
