@@ -120,48 +120,73 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+ // ── Editor de nota (crear / editar) ──
+class NoteEditorPage extends StatefulWidget {
+  final Note? note;
 
-// ── Página principal ──
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  // Este widget es la página principal de tu aplicación. Es con estado,
-  // lo que significa que tiene un objeto State (definido abajo) que contiene
-  // campos que afectan cómo se ve.
-
-  // Esta clase es la configuración para el estado. Contiene los valores
-  // (en este caso el título) proporcionados por el padre (en este caso el
-  // widget App) y usados por el método build del State. Los campos en una
-  // subclase de Widget siempre están marcados como "final".
+  const NoteEditorPage({super.key, this.note});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<NoteEditorPage> createState() => _NoteEditorPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final List<Note> _notes = [];
-  int _nextId = 1;
+class _NoteEditorPageState extends State<NoteEditorPage> {
+  late TextEditingController _titleController;
+  late TextEditingController _contentController;
 
-  void _addNote() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const NoteEditorPage(),
-      ),
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.note?.title ?? '');
+    _contentController = TextEditingController(text: widget.note?.content ?? '');
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final now = DateTime.now();
+    final newNote = Note(
+      id: widget.note?.id ?? 0, // 0 = nuevo
+      title: _titleController.text.trim(),
+      content: _contentController.text,
+      createdAt: widget.note?.createdAt ?? now,
+      updatedAt: now,
     );
 
-    if (result is Note && result.content.trim().isNotEmpty) {
-      setState(() {
-        _notes.add(
-          Note(
-            id: _nextId++,
-            title: result.title,
-            content: result.content,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now(),
-          ),
-        );
+    Navigator.pop(context, newNote);
+  }
+
+  void _delete() {
+    if (widget.note != null) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Eliminar nota'),
+          content: const Text('¿Seguro que quieres eliminar esta entrada?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              onPressed: () => Navigator.pop(context, 'delete'),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        ),
+      ).then((value) {
+        if (value == 'delete') {
+          Navigator.pop(context, 'delete');
+        }
       });
+    } else {
+      Navigator.pop(context);
     }
   }
 
