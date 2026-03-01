@@ -4,6 +4,24 @@ void main() {
   runApp(const MyApp());
 }
 
+// ── Modelo de Nota ──
+// Importante: este modelo debe estar a nivel "top-level" (no dentro de otra clase).
+class Note {
+  final int id;
+  final String title;
+  final String content;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  Note({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -28,7 +46,10 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        //
+        // FIX: no se puede usar ".fromSeed" sin el nombre de la clase.
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -102,7 +123,9 @@ class _MyHomePageState extends State<MyHomePage> {
           // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
           // action in the IDE, or press "p" in the console), to see the
           // wireframe for each widget.
-          mainAxisAlignment: .center,
+          //
+          // FIX: no se puede usar ".center"; debe ser MainAxisAlignment.center
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text('You have pushed the button this many times:'),
             Text(
@@ -120,7 +143,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
- // ── Editor de nota (crear / editar) ──
+
+// ── Editor de nota (crear / editar) ──
 class NoteEditorPage extends StatefulWidget {
   final Note? note;
 
@@ -138,7 +162,9 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.note?.title ?? '');
-    _contentController = TextEditingController(text: widget.note?.content ?? '');
+    _contentController = TextEditingController(
+      text: widget.note?.content ?? '',
+    );
   }
 
   @override
@@ -190,3 +216,53 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final isEditing = widget.note != null;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(isEditing ? 'Editar nota' : 'Nueva nota'),
+        actions: [
+          IconButton(
+            tooltip: 'Guardar',
+            onPressed: _save,
+            icon: const Icon(Icons.save),
+          ),
+          IconButton(
+            tooltip: 'Eliminar',
+            onPressed: _delete,
+            icon: const Icon(Icons.delete),
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                labelText: 'Título',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: TextField(
+                controller: _contentController,
+                decoration: const InputDecoration(
+                  labelText: 'Contenido',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: null,
+                expands: true,
+                textAlignVertical: TextAlignVertical.top,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
